@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException } from "@nestjs/common";
-import { Product } from './product.model'
+import { IProduct, Product } from './product.model'
 import { Postgres } from "src/lib/postgres";
 
 @Injectable()
@@ -52,7 +52,7 @@ export class ProductsService {
     return response;
   }
 
-  async getAllProducts(){
+  async getAllProducts(): Promise<IProduct[]>{
     const query = `SELECT
         product.id,
         product.number,
@@ -74,11 +74,6 @@ export class ProductsService {
 
     this.checkResponse(response)
     return response;
-  }
-
-  insertProduct(name: string, catagory: string) {
-    const newProduct = new Product('1', name, catagory);
-    this.products.push(newProduct);
   }
 
   private async getDocuments(productId: number) {
