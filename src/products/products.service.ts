@@ -1,11 +1,24 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { IProduct, Product } from './product.model'
 import { Postgres } from "src/lib/postgres";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class ProductsService {
   products : Product[] = []
   postgres = new Postgres();
+
+  constructor(
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>
+  ) {}
+
+  findAll(): Promise<Product[]> {
+    const response = this.productRepository.find()
+    console.log(response)
+    return response
+  }
 
   async getSingleProduct(id: number) {
     const query = `SELECT
