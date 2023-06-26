@@ -24,10 +24,9 @@ export class Postgres {
     }
   }
 
-  async execute(query: string): Promise<any[]> {
+  async execute(query: string, queryValue: any[]): Promise<any[]> {
     try{
-      const sql = `${query}`;
-      const result = await this.query(sql);
+      const result = await this.query(query, queryValue);
       return result.rows;
     } catch (error) {
       console.error('Error executing query:', error.message);
