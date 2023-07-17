@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -20,8 +21,9 @@ model product {
   updatedate       DateTime?          @db.Timestamp(6)
   number           String?
   manufacturer     String?
+  product_type     product_type?      @relation(fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target2")
   product_document product_document[]
-  product_price    product_price[]
+  product_supplier product_supplier[]
 }
 
 model product_document {
@@ -30,20 +32,17 @@ model product_document {
   description String?
   path        String?
   filename    String?
-  product     product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_id")
+  product     product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model product_price {
   product_id  Int
   supplier_id Int
   quantity    Int
   price       Decimal  @db.Decimal
-  product     product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_price")
-  supplier    supplier @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "supplier_id")
+  supplier    supplier @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target7")
 
   @@id([product_id, supplier_id, quantity])
-  @@ignore
 }
 
 model product_supplier {
@@ -51,42 +50,67 @@ model product_supplier {
   supplier_id  Int
   number       String?
   product_page String?
+  product      product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target3")
+  supplier     supplier @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target4")
 
   @@id([product_id, supplier_id], map: "productsupplier_pkey")
 }
 
 model product_type {
-  id   Int     @id(map: "producttype_pkey") @default(autoincrement())
-  name String?
+  id      Int       @id(map: "producttype_pkey") @default(autoincrement())
+  name    String
+  product product[]
 }
 
 model product_value {
   product_id   Int
-  value        Decimal? @db.Decimal
+  value        Decimal?  @db.Decimal
   unitid       Int?
   valuename_id Int
+  unit         unit?     @relation(fields: [unitid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target5")
+  valuename    valuename @relation(fields: [valuename_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_target6")
 
   @@id([product_id, valuename_id], map: "productvalue_pkey")
 }
 
 model supplier {
-  id            Int             @id @default(autoincrement())
-  name          String
-  product_price product_price[]
+  id               Int                @id @default(autoincrement())
+  name             String
+  product_price    product_price[]
+  product_supplier product_supplier[]
 }
 
 model unit {
-  id       Int     @id @default(autoincrement())
-  unit     String
-  baseunit Int
-  factor   Decimal @db.Decimal
+  id            Int             @id @default(autoincrement())
+  unit          String
+  baseunit      Int
+  factor        Decimal         @db.Decimal
+  product_value product_value[]
 }
 
 model valuename {
-  id          Int     @default(autoincrement())
-  group_id    Int
-  name        String?
-  unitbase_id Int?
+  id            Int             @id @default(autoincrement())
+  group_id      Int
+  name          String?
+  unitbase_id   Int?
+  product_value product_value[]
+}
 
-  @@id([id, group_id])
+/// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+view product_view {
+  id               Int?
+  name             String?
+  category_id      Int?
+  category         String?
+  factory_number   String?
+  housing          String?
+  quantity         Decimal?  @db.Decimal
+  minimum_quantity Decimal?  @db.Decimal
+  storageplace     String?
+  entrydate        DateTime? @db.Timestamp(6)
+  updatedate       DateTime? @db.Timestamp(6)
+  number           String?
+  manufacturer     String?
+
+  @@ignore
 }
